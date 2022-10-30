@@ -184,11 +184,11 @@ class Xception(nn.Module):
 device = torch.device('cuda' if torch.cuda.is_available() else "cpu")
 
 model = Xception()
-model.load_state_dict(torch.load('/home/ywang/model_20221007_091214_1'))
+model.load_state_dict(torch.load('/data/ywang/model_paper_all1_20221027_140733_0')) 
 model = model.to(device)
 
-test_filename="/home/ywang/test_label.txt"
-image_dir='/home/ywang/XceptionExtract'
+test_filename="/data/ywang/test_paper_label.txt"
+image_dir='/data/ywang/XceptionExtract'
 
 transform = transforms.Compose([
     transforms.ToPILImage(),
@@ -203,63 +203,63 @@ test_dataloader = DataLoader(dataset=test_data, batch_size=batch_size,shuffle=Fa
 
 loss_fn = nn.BCELoss()
 
-epoch_number = 0
-EPOCHS = 5
+#epoch_number = 0
+#EPOCHS = 5
 
-fw = open("/home/ywang/test_output.txt", 'w') 
+fw = open("/data/ywang/test_output_paper1.txt", 'w') 
 
-for epoch in range(EPOCHS):
+#for epoch in range(EPOCHS):
     
-    fw.write('EPOCH {}:'.format(epoch_number + 1)) 
-    fw.write("\n")       
+fw.write("Epoch: ") #('EPOCH {}:'.format(epoch_number + 1)) 
+fw.write("\n")       
 
-    print('EPOCH {}:'.format(epoch_number + 1))
+print("Epoch: ") #('EPOCH {}:'.format(epoch_number + 1))
 
-    model.eval()
+model.eval()
 
-    running_tloss = 0.0
-    toutputs_all = []
-    label_all = []
+running_tloss = 0.0
+toutputs_all = []
+label_all = []
 
-    for i, tdata in enumerate(test_dataloader):
-        tinputs, tlabels = tdata
-        tinputs = tinputs.to(device)#******#
-        tlabels = tlabels[0]
-        tlabels = tlabels.to(device)#******#
+for i, tdata in enumerate(test_dataloader):
+    tinputs, tlabels = tdata
+    tinputs = tinputs.to(device)#******#
+    tlabels = tlabels[0]
+    tlabels = tlabels.to(device)#******#
 
-        toutputs = model(tinputs)
-        toutputs = toutputs.to(device)#******#
-        toutputs_all.extend(toutputs.cpu().detach().numpy()) #[:,1] .detach()
-        label_all.extend(tlabels)
+    toutputs = model(tinputs)
+    toutputs = toutputs.to(device)#******#
+    toutputs_all.extend(toutputs.cpu().detach().numpy()) #[:,1] .detach()
+    label_all.extend(tlabels)
 
-        for i in range(0,len(label_all)):
-            label_all[i] = label_all[i].long()
-        onehot_tlabels = torch.eye(2)[label_all, :]
+    for i in range(0,len(label_all)):
+        label_all[i] = label_all[i].long()
+    onehot_tlabels = torch.eye(2)[label_all, :]
 
-        toutputs_alls = torch.Tensor(np.array(toutputs_all))
+    toutputs_alls = torch.Tensor(np.array(toutputs_all))
 
-        m = nn.Sigmoid() #0-1
+    m = nn.Sigmoid() #0-1
 
-        tloss = loss_fn(m(toutputs_alls), onehot_tlabels)
+    tloss = loss_fn(m(toutputs_alls), onehot_tlabels)
 
-        running_tloss += tloss
+    running_tloss += tloss
 
-    avg_tloss = running_tloss / (i + 1)
-    test_AUC = roc_auc_score(onehot_tlabels, m(toutputs_alls))
-    
-    fw.write('LOSS test {}'.format(avg_tloss))
-    fw.write("\n")   
-    print('LOSS test {}'.format(avg_tloss))
-    fw.write("AUC:{:.4f}".format(test_AUC)) 
-    fw.write("\n")   
-    print("AUC:{:.4f}".format(test_AUC)) 
-   
-    # Log the running loss averaged per batch for both training and validation
-    # writer.add_scalars('Training vs. Validation Loss',
-    #                 { 'Training' : avg_loss, 'Validation' : avg_vloss },
-    #                 epoch_number + 1)
-    # writer.add_scalar('Validation AUC', val_AUC, epoch_number + 1)
-    #writer.flush()
+avg_tloss = running_tloss / (i + 1)
+test_AUC = roc_auc_score(onehot_tlabels, m(toutputs_alls))
+
+fw.write('LOSS test {}'.format(avg_tloss))
+fw.write("\n")   
+print('LOSS test {}'.format(avg_tloss))
+fw.write("AUC:{:.4f}".format(test_AUC)) 
+fw.write("\n")   
+print("AUC:{:.4f}".format(test_AUC)) 
+
+# Log the running loss averaged per batch for both training and validation
+# writer.add_scalars('Training vs. Validation Loss',
+#                 { 'Training' : avg_loss, 'Validation' : avg_vloss },
+#                 epoch_number + 1)
+# writer.add_scalar('Validation AUC', val_AUC, epoch_number + 1)
+#writer.flush()
 
 
-    epoch_number += 1
+#epoch_number += 1

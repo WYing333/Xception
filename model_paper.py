@@ -213,8 +213,8 @@ from torchvision.transforms import transforms
 from sklearn.metrics import roc_auc_score
 
 
-train_filename="/home/ywang/train_FS_label_.txt"
-val_filename="/home/ywang/val_FS_label_.txt"
+train_filename="/data/ywang/train_paper_label.txt" 
+val_filename="/data/ywang/validation_paper_label.txt"
 #test_filename="/home/ywang/test_label.txt"
 image_dir='/data/ywang/XceptionExtract'
  
@@ -281,14 +281,14 @@ def train_one_epoch(epoch_index, tb_writer):
 
 # Initializing in a separate cell so we can easily add more epochs to the same run
 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-writer = SummaryWriter('runs/fashion_trainer_{}'.format(timestamp))
+writer = SummaryWriter('/data/ywang/Xception/runs/fashion_trainer_{}'.format(timestamp))
 epoch_number = 0
 
 EPOCHS = 5
 
 best_vloss = 1_000_000.
 
-fw = open("/home/ywang/model_output_paper_FS.txt", 'w') 
+fw = open("/data/ywang/model_output_paper_all1.txt", 'w') 
 
 for epoch in range(EPOCHS):
     
@@ -355,7 +355,7 @@ for epoch in range(EPOCHS):
     # Track best performance, and save the model's state
     if avg_vloss < best_vloss:
         best_vloss = avg_vloss
-        model_path = 'model_paper_FS_{}_{}'.format(timestamp, epoch_number)
+        model_path = '/data/ywang/model_paper_all1_{}_{}'.format(timestamp, epoch_number)
         torch.save(model.state_dict(), model_path)
 
     epoch_number += 1
@@ -368,12 +368,3 @@ for epoch in range(EPOCHS):
 #cd runs
 #tensorboard --logdir=./
 
-
-#整个训练分别测试
-#DF已经改了
-
-#在同一种类上训练之后测试
-#12: DF -4
-#18: F2F -5
-#15: FS -3
-#19: NT -1
